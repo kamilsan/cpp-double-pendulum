@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 class DoublePendulum
 {
 public:
@@ -32,6 +34,5 @@ private:
   double angularVelocity1_;
   double angularVelocity2_;
 
-  double calculateAngularAcceleration1(double th1, double th2);
-  double calculateAngularAcceleration2(double th1, double th2);
+  std::pair<double, double> calculateAngularAccelerations(double th1, double th2);
 };
