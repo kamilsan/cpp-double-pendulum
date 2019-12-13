@@ -1,11 +1,14 @@
 CC = g++
 CFLAGS = -std=c++11 -Wall -Wextra -pedantic -O3
 
-program: main.o image.o pendulum.o doublePendulum.o
-	$(CC) $(CFLAGS) main.o image.o pendulum.o doublePendulum.o -o program
+program: main.o color.o image.o pendulum.o doublePendulum.o
+	$(CC) $(CFLAGS) main.o color.o image.o pendulum.o doublePendulum.o -o program
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
+
+color.o: color.cpp color.hpp
+	$(CC) $(CFLAGS) -c color.cpp
 
 image.o: image.cpp image.hpp color.hpp
 	$(CC) $(CFLAGS) -c image.cpp

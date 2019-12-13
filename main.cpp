@@ -28,11 +28,11 @@ int main()
     const int x2 = x1 + PIXELS_PER_METER*pendulum.getLength2()*std::sin(theta2) + 0.5;
     const int y2 = y1 + PIXELS_PER_METER*pendulum.getLength2()*std::cos(theta2) + 0.5;
 
-    img.clear(Color{255, 255, 255});
-    img.drawLine(anchorX, anchorY, x1, y1, Color{0, 0, 0});
-    img.drawLine(x1, y1, x2, y2, Color{0, 0, 0});
-    img.fillCircle(x1, y1, 10, Color{0, 0, 0});
-    img.fillCircle(x2, y2, 10, Color{0, 0, 0});
+    img.clear(Color::White);
+    img.drawLine(anchorX, anchorY, x1, y1, Color::Black);
+    img.drawLine(x1, y1, x2, y2, Color::Black);
+    img.fillCircle(x1, y1, 10, Color::Black);
+    img.fillCircle(x2, y2, 10, Color::Black);
 
     const std::string fileName = "frames/frame" + std::to_string(step) + ".ppm";
     img.save(fileName.c_str());

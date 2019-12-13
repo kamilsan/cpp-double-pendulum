@@ -7,4 +7,6 @@ struct Color
   unsigned char r;
   unsigned char g;
   unsigned char b;
+
+  static const Color White, Black, Red, Green, Blue, Yellow, Magenta, Cyan;
 };
