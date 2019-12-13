@@ -13,10 +13,10 @@ color.o: color.cpp color.hpp
 image.o: image.cpp image.hpp color.hpp
 	$(CC) $(CFLAGS) -c image.cpp
 
-pendulum.o: pendulum.cpp pendulum.hpp
+pendulum.o: pendulum.cpp pendulum.hpp pendulumParams.hpp initialConditions.hpp
 	$(CC) $(CFLAGS) -c pendulum.cpp
 
-doublePendulum.o: doublePendulum.cpp doublePendulum.hpp
+doublePendulum.o: doublePendulum.cpp doublePendulum.hpp pendulumParams.hpp initialConditions.hpp
 	$(CC) $(CFLAGS) -c doublePendulum.cpp
 
 clean:

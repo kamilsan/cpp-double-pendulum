@@ -1,10 +1,18 @@
 #pragma once
 
+#include "pendulumParams.hpp"
+#include "initialConditions.hpp"
+
 class Pendulum
 {
 public:
-  Pendulum(double g, double len, double mass, double theta): 
-    g_(g), len_(len), mass_(mass), theta_(theta), angularVelocity_(0) {}
+  Pendulum(double g, const PendulumParams& params, const InitialConditions& initialConditions): 
+    g_(g), 
+    len_(params.armLength), 
+    mass_(params.mass), 
+    theta_(initialConditions.angle), 
+    angularVelocity_(initialConditions.angularVelocity) 
+  {}
 
   void update(double stepSize);
 

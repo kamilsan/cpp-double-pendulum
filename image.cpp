@@ -47,12 +47,12 @@ void Image::clear(const Color& color)
   }
 }
 
-void Image::fillCircle(unsigned int cx, unsigned int cy, unsigned int r, const Color& color)
+void Image::fillCircle(const Point& center, unsigned int r, const Color& color)
 {
-  int minX = cx - r;
-  int minY = cy - r;
-  int maxX = cx + r + 1;
-  int maxY = cy + r + 1;
+  int minX = center.x - r;
+  int minY = center.y - r;
+  int maxX = center.x + r + 1;
+  int maxY = center.y + r + 1;
 
   minX = minX < 0 ? 0 : minX;
   minY = minY < 0 ? 0 : minY;
@@ -63,9 +63,11 @@ void Image::fillCircle(unsigned int cx, unsigned int cy, unsigned int r, const C
   {
     for(int x = minX; x < maxX; ++x)
     {
-      if((x - cx)*(x - cx) + (y - cy)*(y - cy) <= r*r)
+      const int rx = x - center.x;
+      const int ry = y - center.y;
+      if((unsigned)rx*rx + (unsigned)ry*ry <= r*r)
       {
-        int index = 3*(y*width_ + x);
+        const int index = 3*(y*width_ + x);
         pixels_[index]   = color.r;
         pixels_[index+1] = color.g;
         pixels_[index+2] = color.b;
@@ -74,37 +76,37 @@ void Image::fillCircle(unsigned int cx, unsigned int cy, unsigned int r, const C
   }
 }
 
-void Image::drawLine(int x1, int y1, int x2, int y2, const Color& color)
+void Image::drawLine(const Point& pt1, const Point& pt2, const Color& color)
 {
   int dx, dy, d, xi, yi;
-  int x = x1, y = y1;
+  int x = pt1.x, y = pt1.y;
 
-  if(x1 < x2)
+  if(pt1.x < pt2.x)
   {
-    dx = x2 - x1;
+    dx = pt2.x - pt1.x;
     xi = 1;
   }
   else
   {
-    dx = x1 - x2;
+    dx = pt1.x - pt2.x;
     xi = -1;
   }
 
-  if(y1 < y2)
+  if(pt1.y < pt2.y)
   {
-    dy = y2 - y1;
+    dy = pt2.y - pt1.y;
     yi = 1;
   }
   else
   {
-    dy = y1 - y2;
+    dy = pt1.y - pt2.y;
     yi = -1;
   }
 
   if(dx > dy)
   {
     d = 2*dy - dx;
-    while(x != x2)
+    while(x != pt2.x)
     {
       setPixel(x, y, color);
       if(d > 0)
@@ -119,7 +121,7 @@ void Image::drawLine(int x1, int y1, int x2, int y2, const Color& color)
   else
   {
     d = 2*dx - dy;
-    while(y != y2)
+    while(y != pt2.y)
     {
       setPixel(x, y, color);
       if(d > 0)
@@ -130,6 +132,17 @@ void Image::drawLine(int x1, int y1, int x2, int y2, const Color& color)
       d = d + 2*dx;
       y += yi;
     }
+  }
+}
+
+void Image::setPixel(const Point& pos, const Color& color)
+{
+  if(pos.x >= 0 && pos.x < (long)width_ && pos.y >= 0 && pos.y < (long)height_)
+  {
+    int index = 3*(pos.y*width_ + pos.x);
+    pixels_[index]   = color.r;
+    pixels_[index+1] = color.g;
+    pixels_[index+2] = color.b;
   }
 }
 
@@ -151,6 +164,16 @@ void Image::save(const char* filename) const
   file << "P6\n" << width_ << " " << height_ << "\n255\n";
   file.write(reinterpret_cast<char*>(pixels_), len_);
   file.close();
+}
+
+Color Image::getPixel(const Point& pos) const
+{
+  if(pos.x <= 0 && pos.y <= 0 && (unsigned)pos.x < width_ && (unsigned)pos.y < height_)
+  {
+    int index = 3*(pos.y*width_ + pos.x);
+    return Color{pixels_[index], pixels_[index+1], pixels_[index+2]};
+  }
+  return Color{0, 0, 0};
 }
 
 Color Image::getPixel(unsigned int x, unsigned int y) const

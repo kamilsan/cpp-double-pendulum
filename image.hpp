@@ -1,6 +1,7 @@
 #pragma once
 
 #include "color.hpp"
+#include "point.hpp"
 
 class Image
 {
@@ -12,11 +13,13 @@ class Image
     ~Image();
 
     void clear(const Color& color);
-    void fillCircle(unsigned int x, unsigned int y, unsigned int r, const Color& color);
-    void drawLine(int x1, int y1, int x2, int y2, const Color& color);
+    void fillCircle(const Point& center, unsigned int r, const Color& color);
+    void drawLine(const Point& pt1, const Point& pt2, const Color& color);
+    void setPixel(const Point& pos, const Color& color);
     void setPixel(int x, int y, const Color& color);
 
     void save(const char* filename) const;
+    Color getPixel(const Point& pos) const;
     Color getPixel(unsigned int x, unsigned int y) const;
     unsigned int getWidth() const;
     unsigned int getHeight() const;

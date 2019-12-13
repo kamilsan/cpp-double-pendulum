@@ -2,19 +2,25 @@
 
 #include <utility>
 
+#include "pendulumParams.hpp"
+#include "initialConditions.hpp"
+
 class DoublePendulum
 {
 public:
-  DoublePendulum(double g, double l1, double m1, double l2, double m2, double theta1, double theta2): 
+  DoublePendulum(double g, 
+    const PendulumParams& params1, const InitialConditions& initialConditions1,
+    const PendulumParams& params2, const InitialConditions& initialConditions2): 
     g_(g), 
-    l1_(l1), 
-    m1_(m1),
-    l2_(l2),
-    m2_(m2), 
-    theta1_(theta1),
-    theta2_(theta2),
-    angularVelocity1_(0),
-    angularVelocity2_(0) {}
+    l1_(params1.armLength), 
+    m1_(params1.mass),
+    l2_(params2.armLength),
+    m2_(params2.mass), 
+    theta1_(initialConditions1.angle),
+    theta2_(initialConditions2.angle),
+    angularVelocity1_(initialConditions1.angularVelocity),
+    angularVelocity2_(initialConditions2.angularVelocity) 
+  {}
 
   void update(double stepSize);
 
@@ -34,5 +40,5 @@ private:
   double angularVelocity1_;
   double angularVelocity2_;
 
-  std::pair<double, double> calculateAngularAccelerations(double th1, double th2);
+  std::pair<double, double> calculateAngularAccelerations(double theta1, double theta2);
 };

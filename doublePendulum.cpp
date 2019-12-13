@@ -54,13 +54,15 @@ double DoublePendulum::getLength2() const
   return l2_;
 }
 
-std::pair<double, double> DoublePendulum::calculateAngularAccelerations(double th1, double th2)
+std::pair<double, double> DoublePendulum::calculateAngularAccelerations(double theta1, double theta2)
 {
-  const double sinAdiff = std::sin(th1-th2);
-  const double cosAdiff = std::cos(th1-th2);
+  const double sinAdiff = std::sin(theta1-theta2);
+  const double cosAdiff = std::cos(theta1-theta2);
   const double det = (m1_+m2_)*m2_*l1_*l2_ - m2_*m2_*l1_*l2_*cosAdiff*cosAdiff;
-  const double A = -m2_*l2_*angularVelocity2_*angularVelocity2_*sinAdiff - (m1_+m2_)*g_*std::sin(th1);
-  const double B = m2_*l1_*angularVelocity1_*angularVelocity1_*sinAdiff - m2_*g_*std::sin(th2);
+  const double A = 
+    -m2_*l2_*angularVelocity2_*angularVelocity2_*sinAdiff - (m1_+m2_)*g_*std::sin(theta1);
+  const double B = 
+    m2_*l1_*angularVelocity1_*angularVelocity1_*sinAdiff - m2_*g_*std::sin(theta2);
 
   return std::make_pair(
     (m2_*l2_*A - m2_*l2_*cosAdiff*B)/det, 
