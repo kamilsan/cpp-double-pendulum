@@ -10,6 +10,7 @@ Custom, minimalistic image class is used to render animation frames, that then c
 In order to build this application run the following command:
 
 ```bash
+cmake .
 make
 ```
 
@@ -22,7 +23,7 @@ mkdir frames
 Run:
 
 ```bash
-./program
+./app
 ```
 
 And to make a video from produced frames:
