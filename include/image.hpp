@@ -13,6 +13,7 @@ class Image
     Image(Image&& other) noexcept;
 
     void clear(const Color& color);
+    void drawCircle(const Point& center, unsigned int r, const Color& color);
     void fillCircle(const Point& center, unsigned int r, const Color& color);
     void drawLine(const Point& pt1, const Point& pt2, const Color& color);
     void setPixel(const Point& pos, const Color& color);
@@ -28,6 +29,7 @@ class Image
     Image& operator=(Image&& other) noexcept;
   private:
     void plot(int x, int y, const Color& color, float a);
+    void fillLine(int xMin, int xMax, int y, const Color& color);
 
     std::unique_ptr<unsigned char[]> pixels_;
     unsigned width_;

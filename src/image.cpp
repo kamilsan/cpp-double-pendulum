@@ -17,8 +17,7 @@ Image::Image(const Image& other)
   len_ = other.len_;
 
   pixels_ = std::make_unique<unsigned char[]>(len_);
-  for(unsigned int i = 0; i < len_; ++i)
-    pixels_[i] = other.pixels_[i];
+  memcpy(pixels_.get(), other.pixels_.get(), len_ * sizeof(unsigned char));
 }
 
 Image::Image(Image&& other) noexcept
@@ -29,13 +28,41 @@ Image::Image(Image&& other) noexcept
   pixels_ = std::move(other.pixels_);
 }
 
+Image& Image::operator=(const Image& other)
+{
+  if(&other != this)
+  {
+    width_ = other.width_;
+    height_ = other.height_;
+    len_ = other.len_;
+
+    pixels_ = std::make_unique<unsigned char[]>(len_);
+    memcpy(pixels_.get(), other.pixels_.get(), len_ * sizeof(unsigned char));
+  }
+
+  return *this;
+}
+
+Image& Image::operator=(Image&& other) noexcept
+{
+  if(&other != this)
+  {
+    width_ = other.width_;
+    height_ = other.height_;
+    len_ = other.len_;
+    pixels_ = std::move(other.pixels_);
+  }
+
+  return *this;
+}
+
 void Image::clear(const Color& color)
 {
   for(unsigned y = 0; y < height_; ++y)
   {
     for(unsigned x = 0; x < width_; ++x)
     {
-      int index = 3*(y*width_ + x);
+      const int index = 3*(y*width_ + x);
       pixels_[index]   = color.r;
       pixels_[index+1] = color.g;
       pixels_[index+2] = color.b;
@@ -43,50 +70,87 @@ void Image::clear(const Color& color)
   }
 }
 
+void Image::drawCircle(const Point& center, unsigned int r, const Color& color)
+{
+  unsigned int x = 0;
+  unsigned int y = r;
+  int m = 5 - 4 * r;
+
+  while(x <= y)
+  {
+    setPixel(center.x + x, center.y + y, color);
+    setPixel(center.x - x, center.y + y, color);
+    setPixel(center.x + x, center.y - y, color);
+    setPixel(center.x - x, center.y - y, color);
+
+    setPixel(center.x + y, center.y + x, color);
+    setPixel(center.x - y, center.y + x, color);
+    setPixel(center.x + y, center.y - x, color);
+    setPixel(center.x - y, center.y - x, color);
+
+    if(m > 0)
+    {
+      y -= 1;
+      m -= 8 * y;
+    }
+    x += 1;
+    m += 8 * x + 4;
+  }
+}
+
 void Image::fillCircle(const Point& center, unsigned int r, const Color& color)
 {
-  int minX = center.x - r;
-  int minY = center.y - r;
-  int maxX = center.x + r + 1;
-  int maxY = center.y + r + 1;
+  unsigned int x = 0;
+  unsigned int y = r;
+  int m = 5 - 4 * r;
 
-  minX = minX < 0 ? 0 : minX;
-  minY = minY < 0 ? 0 : minY;
-  maxX = (unsigned)maxX > width_ ? width_ : maxX;
-  maxY = (unsigned)maxY > height_ ? height_ : maxY;
-
-  for(int y = minY; y < maxY; ++y)
+  while(x <= y)
   {
-    for(int x = minX; x < maxX; ++x)
+    fillLine(center.x - x, center.x + x, center.y + y, color);
+    fillLine(center.x - x, center.x + x, center.y - y, color);
+
+    fillLine(center.x - y, center.x + y, center.y + x, color);
+    fillLine(center.x - y, center.x + y, center.y - x, color);
+
+    if(m > 0)
     {
-      const int rx = x - center.x;
-      const int ry = y - center.y;
-      if((unsigned)rx*rx + (unsigned)ry*ry <= r*r)
-      {
-        const int index = 3*(y*width_ + x);
-        pixels_[index]   = color.r;
-        pixels_[index+1] = color.g;
-        pixels_[index+2] = color.b;
-      }
+      y -= 1;
+      m -= 8 * y;
     }
+    x += 1;
+    m += 8 * x + 4;
+  }
+}
+
+void Image::fillLine(int xMin, int xMax, int y, const Color& color)
+{
+  for(int x = xMin; x <= xMax; ++x)
+  {
+    setPixel(x, y, color);
   }
 }
 
 void Image::plot(int x, int y, const Color& color, float a)
 {
-  if(x < 0 || x >= width_ || y < 0 || y >= height_)
-    return;
+  // Note: casting to unsigned is probably safe here
+  //       because pos.x >= 0 is ensured before
+  if(x >= 0 && y >= 0 && (unsigned)x < width_ && (unsigned)y < height_)
+  {
+    const int i = 3*(y*width_ + x);
 
-  int i = 3*(y*width_ + x);
+    const auto r = a*color.r + (1.0f - a)*pixels_[i] + 0.5f;
+    const auto g = a*color.g + (1.0f - a)*pixels_[i+1] + 0.5f;
+    const auto b = a*color.b + (1.0f - a)*pixels_[i+2] + 0.5f;
 
-  pixels_[i] = std::min(255.0f, std::max(0.0f, (a*color.r + (1.0f - a)*(unsigned char)pixels_[i] + 0.5f)));
-  pixels_[i+1] = std::min(255.0f, std::max(0.0f, (a*color.g + (1.0f - a)*(unsigned char)pixels_[i+1] + 0.5f)));
-  pixels_[i+2] = std::min(255.0f, std::max(0.0f, (a*color.b + (1.0f - a)*(unsigned char)pixels_[i+2] + 0.5f)));
+    pixels_[i] = std::min(255.0f, std::max(0.0f, r));
+    pixels_[i+1] = std::min(255.0f, std::max(0.0f, g));
+    pixels_[i+2] = std::min(255.0f, std::max(0.0f, b));
+  }
 }
 
 void Image::drawLine(const Point& pt1, const Point& pt2, const Color& color)
 {
-  bool steep = abs(pt2.y - pt1.y) > abs(pt2.x - pt1.x);
+  const bool steep = abs(pt2.y - pt1.y) > abs(pt2.x - pt1.x);
   float x0 = pt1.x;
   float y0 = pt1.y;
   float x1 = pt2.x;
@@ -103,8 +167,8 @@ void Image::drawLine(const Point& pt1, const Point& pt2, const Color& color)
     std::swap(y0, y1);
   }
   
-  int dx = x1 - x0;
-  int dy = y1 - y0;
+  const int dx = x1 - x0;
+  const int dy = y1 - y0;
   float m = (float)dy/dx;
   if(dx == 0)
     m = 1;
@@ -116,8 +180,8 @@ void Image::drawLine(const Point& pt1, const Point& pt2, const Color& color)
   {
     while(x < x1)
     {
-      int yy = floor(y);
-      float a = y - yy;
+      const int yy = floor(y);
+      const float a = y - yy;
 
       plot(yy, x, color, 1.0f - a);
       plot(yy + 1, x, color, a);
@@ -130,8 +194,8 @@ void Image::drawLine(const Point& pt1, const Point& pt2, const Color& color)
   {
     while(x < x1)
     {
-      int yy = floor(y);
-      float a = y - yy;
+      const int yy = floor(y);
+      const float a = y - yy;
 
       plot(x, yy, color, 1.0f - a);
       plot(x, yy + 1, color, a);
@@ -144,9 +208,9 @@ void Image::drawLine(const Point& pt1, const Point& pt2, const Color& color)
 
 void Image::setPixel(const Point& pos, const Color& color)
 {
-  if(pos.x >= 0 && pos.x < (long)width_ && pos.y >= 0 && pos.y < (long)height_)
+  if(pos.x >= 0 && pos.y >= 0 && (unsigned)pos.x < width_ && (unsigned)pos.y < height_)
   {
-    int index = 3*(pos.y*width_ + pos.x);
+    const int index = 3*(pos.y*width_ + pos.x);
     pixels_[index]   = color.r;
     pixels_[index+1] = color.g;
     pixels_[index+2] = color.b;
@@ -155,9 +219,9 @@ void Image::setPixel(const Point& pos, const Color& color)
 
 void Image::setPixel(int x, int y, const Color& color)
 {
-  if(x >= 0 && x < (long)width_ && y >= 0 && y < (long)height_)
+  if(x >= 0 && y >= 0 && (unsigned)x < width_ && (unsigned)y < height_)
   {
-    int index = 3*(y*width_ + x);
+    const int index = 3*(y*width_ + x);
     pixels_[index]   = color.r;
     pixels_[index+1] = color.g;
     pixels_[index+2] = color.b;
@@ -175,9 +239,9 @@ void Image::save(const char* filename) const
 
 Color Image::getPixel(const Point& pos) const
 {
-  if(pos.x <= 0 && pos.y <= 0 && (unsigned)pos.x < width_ && (unsigned)pos.y < height_)
+  if(pos.x >= 0 && pos.y >= 0 && (unsigned)pos.x < width_ && (unsigned)pos.y < height_)
   {
-    int index = 3*(pos.y*width_ + pos.x);
+    const int index = 3*(pos.y*width_ + pos.x);
     return Color{pixels_[index], pixels_[index+1], pixels_[index+2]};
   }
   return Color{0, 0, 0};
@@ -187,38 +251,8 @@ Color Image::getPixel(unsigned int x, unsigned int y) const
 {
   if(x < width_ && y < height_)
   {
-    int index = 3*(y*width_ + x);
+    const int index = 3*(y*width_ + x);
     return Color{pixels_[index], pixels_[index+1], pixels_[index+2]};
   }
   return Color{0, 0, 0};
 }
-
-Image& Image::operator=(const Image& other)
-{
-  if(this == &other)
-    return *this;
-
-  width_ = other.width_;
-  height_ = other.height_;
-  len_ = other.len_;
-
-  pixels_ = std::make_unique<unsigned char[]>(len_);
-  for(unsigned int i = 0; i < len_; ++i)
-    pixels_[i] = other.pixels_[i];
-
-  return *this;
-}
-
-Image& Image::operator=(Image&& other) noexcept
-{
-  if(this == &other)
-    return *this;
-
-  width_ = other.width_;
-  height_ = other.height_;
-  len_ = other.len_;
-  pixels_ = std::move(other.pixels_);
-
-  return *this;
-}
-
